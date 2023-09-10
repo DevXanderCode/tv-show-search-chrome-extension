@@ -8,6 +8,12 @@ chrome.runtime.onInstalled.addListener((details) => {
     contexts: ["page", "selection"],
   });
 
+  chrome.contextMenus.create({
+    title: "Read This Text",
+    id: "contextMenu2",
+    contexts: ["page", "selection"],
+  });
+
   chrome.contextMenus.onClicked.addListener((event) => {
     console.log("context menu event", event);
     // chrome.search.query({
@@ -22,18 +28,22 @@ chrome.runtime.onInstalled.addListener((details) => {
     //   url: `https://www.imdb.com/find?q=${event?.selectionText}&ref_=nv_sr_sm`,
     // });
 
-    fetch(
-      `https://api.tvmaze.com/search/shows?q=${
-        event?.selectionText || "Black clover"
-      }`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Logging tv shows data", data);
-        chrome.storage.local.set({
-          shows: data,
+    if (event?.menuItemId === "contextMenu1") {
+      fetch(
+        `https://api.tvmaze.com/search/shows?q=${
+          event?.selectionText || "Black clover"
+        }`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Logging tv shows data", data);
+          chrome.storage.local.set({
+            shows: data,
+          });
         });
-      });
+    } else if (event?.menuItemId === "contextMenu2") {
+      chrome.tts.speak(event.selectionText, { rate: 0.5 });
+    }
   });
 });
 
